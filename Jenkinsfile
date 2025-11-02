@@ -11,7 +11,7 @@ pipeline {
             steps {
                 script {
                     // Build the Docker image
-                    sh 'docker build -t $DOCKER_IMAGE:$DOCKER_TAG .'
+                    bat 'docker build -t %DOCKER_IMAGE%:%DOCKER_TAG% .'
                 }
             }
         }
@@ -19,15 +19,27 @@ pipeline {
         stage('Run') {
             steps {
                 script {
-                    // Stop any existing container
-                    sh 'docker ps -q --filter "name=flask-app" | grep -q . && docker stop flask-app || true'
-                    sh 'docker ps -aq --filter "name=flask-app" | grep -q . && docker rm flask-app || true'
+                    // Stop and remove existing container if it exists
+                    bat 'docker stop flask-app 2>nul || exit /b 0'
+                    bat 'docker rm flask-app 2>nul || exit /b 0'
                     
                     // Run the new container
-                    sh 'docker run -d -p 8080:5000 --name flask-app $DOCKER_IMAGE:$DOCKER_TAG'
+                    bat 'docker run -d -p 8080:5000 --name flask-app %DOCKER_IMAGE%:%DOCKER_TAG%'
                 }
             }
         }
+        
+        stage('Test') {
+            steps {
+                script {
+                    // Simple health check with retry
+                    bat 'ping localhost -n 5'  // Wait for container to start
+                    bat 'curl http://localhost:8080'
+                }
+            }
+        }
+    }
+}
         
         stage('Test') {
             steps {
