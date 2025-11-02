@@ -13,7 +13,7 @@ pipeline {
                 sh '''
                 docker stop flask-app || true
                 docker rm flask-app || true
-                docker run -d -p 8080:5000 --name flask-app devops-flask-app:latest
+                docker run -d -p 8081:5000 --name flask-app devops-flask-app:latest
                 '''
             }
         }
@@ -22,7 +22,7 @@ pipeline {
             steps {
                 sh '''
                 sleep 5
-                curl http://localhost:8080
+                curl http://localhost:8081
                 '''
             }
         }
