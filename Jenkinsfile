@@ -11,9 +11,10 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
+                docker network create flask-net || true
                 docker stop flask-app || true
                 docker rm flask-app || true
-                docker run -d -p 8081:5000 --name flask-app devops-flask-app:latest
+                docker run -d --network flask-net -p 8081:5000 --name flask-app devops-flask-app:latest
                 '''
             }
         }
@@ -22,7 +23,7 @@ pipeline {
             steps {
                 sh '''
                 sleep 5
-                curl http://localhost:8081
+                docker exec flask-app curl http://localhost:5000
                 '''
             }
         }
